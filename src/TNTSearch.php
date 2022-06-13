@@ -24,6 +24,7 @@ class TNTSearch
     public $fuzzy_prefix_length  = 2;
     public $fuzzy_max_expansions = 50;
     public $fuzzy_distance       = 2;
+    public $fuzzy_priority       = false;
     protected $dbh               = null;
 
     /**
@@ -301,7 +302,7 @@ class TNTSearch
      */
     public function getWordlistByKeyword($keyword, $isLastWord = false)
     {
-        if ($this->fuzziness) {
+        if (true === $this->fuzziness && true === $this->fuzzy_priority) {
             return $this->fuzzySearch($keyword);
         }
 
@@ -316,7 +317,12 @@ class TNTSearch
             $stmtWord->bindValue(':keyword', mb_strtolower($keyword));
         }
         $stmtWord->execute();
-        return $stmtWord->fetchAll(PDO::FETCH_ASSOC);
+        $res = $stmtWord->fetchAll(PDO::FETCH_ASSOC);
+
+        if ($this->fuzziness && !isset($res[0])) {
+            return $this->fuzzySearch($keyword);
+        }
+        return $res;
     }
 
     /**
