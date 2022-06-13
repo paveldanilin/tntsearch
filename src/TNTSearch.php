@@ -24,6 +24,7 @@ class TNTSearch
     public $fuzzy_prefix_length  = 2;
     public $fuzzy_max_expansions = 50;
     public $fuzzy_distance       = 2;
+    public $fuzzy_priority       = false;
     protected $dbh               = null;
 
     /**
@@ -301,6 +302,10 @@ class TNTSearch
      */
     public function getWordlistByKeyword($keyword, $isLastWord = false)
     {
+        if (true === $this->fuzziness && true === $this->fuzzy_priority) {
+            return $this->fuzzySearch($keyword);
+        }
+
         $searchWordlist = "SELECT * FROM wordlist WHERE term like :keyword LIMIT 1";
         $stmtWord       = $this->index->prepare($searchWordlist);
 
