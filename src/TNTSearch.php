@@ -301,6 +301,10 @@ class TNTSearch
      */
     public function getWordlistByKeyword($keyword, $isLastWord = false)
     {
+        if ($this->fuzziness) {
+            return $this->fuzzySearch($keyword);
+        }
+
         $searchWordlist = "SELECT * FROM wordlist WHERE term like :keyword LIMIT 1";
         $stmtWord       = $this->index->prepare($searchWordlist);
 
@@ -312,12 +316,7 @@ class TNTSearch
             $stmtWord->bindValue(':keyword', mb_strtolower($keyword));
         }
         $stmtWord->execute();
-        $res = $stmtWord->fetchAll(PDO::FETCH_ASSOC);
-
-        if ($this->fuzziness && !isset($res[0])) {
-            return $this->fuzzySearch($keyword);
-        }
-        return $res;
+        return $stmtWord->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
